@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .logout {
+      text-align: right;
+      margin-bottom: 20px;
+    }
+    .logout a {
+      color: #ff0000;
+      text-decoration: none;
+    }
+    .section {
+      background-color: #fff;
+      padding: 15px;
+      border-radius: 5px;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+    h2 {
+      margin-top: 0;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    input, select, textarea {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      background-color: #000;
+      color: #fff;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #333;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #ccc;
+      text-align: left;
+    }
+    th {
+      background-color: #f0f0f0;
+    }
+    img, video {
+      max-width: 100px;
+      max-height: 100px;
+      border-radius: 5px;
+    }
+    .actions form {
+      display: inline;
+    }
+    .actions button {
+      background-color: #007bff;
+      margin-right: 5px;
+    }
+    .actions button.delete {
+      background-color: #ff0000;
+    }
+    .error, .success {
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+      text-align: center;
+    }
+    .error {
+      background-color: #ffcccc;
+      color: #cc0000;
+    }
+    .success {
+      background-color: #ccffcc;
+      color: #006600;
+    }
+  </style>
+</head>
+<body>
+  <h1>Admin Dashboard</h1>
+  <div class="logout">
+    <a href="/admin/logout">Logout</a>
+  </div>
+
+  <!-- Display Success/Error Messages -->
+  <% if (typeof success !== 'undefined') { %>
+    <div class="success"><%= success %></div>
+  <% } %>
+  <% if (typeof error !== 'undefined') { %>
+    <div class="error"><%= error %></div>
+  <% } %>
+
+  <!-- Upload Section -->
+  <div class="section">
+    <h2>Upload Course/Banner</h2>
+    <form action="/admin/upload" method="POST" enctype="multipart/form-data">
+      <input type="text" name="title" placeholder="Title" required />
+      <select name="type" id="uploadType" required onchange="togglePremiumFields()">
+        <option value="free">Free Course</option>
+        <option value="premium">Premium Course</option>
+        <option value="banner">Banner</option>
+      </select>
+      <div id="premiumFields" style="display: none;">
+        <input type="number" name="price" placeholder="Price (e.g., 5999)" />
+        <input type="number" name="discountPrice" placeholder="Discount Price (e.g., 2999)" />
+        <input type="number" name="discountPercent" placeholder="Discount Percent (e.g., 50)" />
+        <select name="mode">
+          <option value="Online">Online</option>
+          <option value="Recorded">Recorded</option>
+          <option value="Live">Live</option>
+        </select>
+        <input type="number" name="likes" placeholder="Likes (e.g., 50)" />
+        <input type="text" name="couponCode" placeholder="Coupon Code (e.g., GOOD10)" />
+        <textarea name="description" placeholder="Course Description" rows="4"></textarea>
+      </div>
+      <input type="file" name="thumbnail" id="thumbnailInput" accept="image/*" required />
+      <input type="file" name="video" id="videoInput" accept="video/*" />
+      <button type="submit">Upload</button>
+    </form>
+  </div>
+
+  <!-- Notification Upload Section -->
+  <div class="section">
+      <h2>Upload Notification</h2>
+      <form action="/admin/upload-notification" method="POST">
+          <input type="text" name="title" placeholder="Notification Title" required />
+          <textarea name="message" placeholder="Notification Message" rows="4" required></textarea>
+          <button type="submit">Upload Notification</button>
+      </form>
+  </div>
+
+  <!-- Upload Certificate or Video Section -->
+  <div class="section">
+    <h2>Upload Certificate or Video</h2>
+    <form action="/admin/upload-certificate-video" method="POST" enctype="multipart/form-data">
+      <input type="text" name="title" placeholder="Title" required />
+      <select name="userId" required>
+        <option value="">Select User</option>
+        <% users.forEach(user => { %>
+          <option value="<%= user.id %>"><%= user.name %> (<%= user.email %>)</option>
+        <% }) %>
+      </select>
+      <select name="type" id="uploadTypeCertVideo" required onchange="toggleUploadFields()">
+        <option value="">Select Type</option>
+        <option value="certificate">Certificate</option>
+        <option value="video">Video</option>
+      </select>
+      <div id="certificateFields" style="display: none;">
+        <input type="file" name="certificate" accept="application/pdf" />
+      </div>
+      <div id="videoFields" style="display: none;">
+        <input type="file" name="thumbnail" accept="image/*" />
+        <input type="file" name="video" accept="video/*" />
+      </div>
+      <button type="submit">Upload</button>
+    </form>
+  </div>
+
+  <!-- Users Section -->
+  <div class="section">
+    <h2>Users</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Org Code</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% users.forEach(user => { %>
+          <tr>
+            <td><%= user.name %></td>
+            <td><%= user.email %></td>
+            <td><%= user.orgCode || 'N/A' %></td>
+            <td class="actions">
+              <form action="/admin/users/edit/<%= user.id %>" method="POST">
+                <input type="text" name="name" value="<%= user.name %>" required />
+                <button type="submit">Edit</button>
+              </form>
+              <form action="/admin/users/delete/<%= user.id %>" method="POST">
+                <button type="submit" class="delete">Delete</button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Courses Section -->
+  <div class="section">
+    <h2>Courses</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Type</th>
+          <th>Price</th>
+          <th>Discount Price</th>
+          <th>Discount Percent</th>
+          <th>Mode</th>
+          <th>Likes</th>
+          <th>Coupon Code</th>
+          <th>Description</th>
+          <th>Thumbnail</th>
+          <th>Video</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% courses.forEach(course => { %>
+          <tr>
+            <td><%= course.title %></td>
+            <td><%= course.type %></td>
+            <td><%= course.price || 'N/A' %></td>
+            <td><%= course.discountPrice || 'N/A' %></td>
+            <td><%= course.discountPercent || 'N/A' %></td>
+            <td><%= course.mode || 'N/A' %></td>
+            <td><%= course.likes || '0' %></td>
+            <td><%= course.couponCode || 'N/A' %></td>
+            <td><%= course.description || 'N/A' %></td>
+            <td>
+              <% if (course.thumbnail) { %>
+                <img src="<%= course.thumbnail %>" alt="Thumbnail" />
+              <% } else { %>
+                N/A
+              <% } %>
+            </td>
+            <td>
+              <% if (course.video) { %>
+                <video src="<%= course.video %>" controls></video>
+              <% } else { %>
+                N/A
+              <% } %>
+            </td>
+            <td class="actions">
+              <form action="/admin/courses/edit/<%= course.id %>" method="POST">
+                <input type="text" name="title" value="<%= course.title %>" required />
+                <% if (course.type === 'premium') { %>
+                  <input type="number" name="price" value="<%= course.price %>" placeholder="Price" />
+                  <input type="number" name="discountPrice" value="<%= course.discountPrice %>" placeholder="Discount Price" />
+                  <input type="number" name="discountPercent" value="<%= course.discountPercent %>" placeholder="Discount Percent" />
+                  <select name="mode">
+                    <option value="Online" <%= course.mode === 'Online' ? 'selected' : '' %>>Online</option>
+                    <option value="Recorded" <%= course.mode === 'Recorded' ? 'selected' : '' %>>Recorded</option>
+                    <option value="Live" <%= course.mode === 'Live' ? 'selected' : '' %>>Live</option>
+                  </select>
+                  <input type="number" name="likes" value="<%= course.likes || 0 %>" placeholder="Likes" />
+                  <input type="text" name="couponCode" value="<%= course.couponCode || '' %>" placeholder="Coupon Code" />
+                  <textarea name="description" placeholder="Course Description" rows="4"><%= course.description || '' %></textarea>
+                <% } %>
+                <button type="submit">Edit</button>
+              </form>
+              <form action="/admin/courses/delete/<%= course.id %>" method="POST">
+                <button type="submit" class="delete">Delete</button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Banners Section -->
+  <div class="section">
+    <h2>Banners</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Image</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% banners.forEach(banner => { %>
+          <tr>
+            <td><%= banner.title %></td>
+            <td><img src="<%= banner.image %>" alt="<%= banner.title %>" /></td>
+            <td class="actions">
+              <form action="/admin/banners/edit/<%= banner.id %>" method="POST">
+                <input type="text" name="title" value="<%= banner.title %>" required />
+                <button type="submit">Edit</button>
+              </form>
+              <form action="/admin/banners/delete/<%= banner.id %>" method="POST">
+                <button type="submit" class="delete">Delete</button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Certificates and Videos Section -->
+  <div class="section">
+    <h2>Certificates and Videos</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Title</th>
+          <th>Type</th>
+          <th>Certificate</th>
+          <th>Thumbnail</th>
+          <th>Video</th>
+          <th>Created At</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% certificates.forEach(cert => { %>
+          <tr>
+            <td><%= cert.userName || 'Unknown' %> (<%= cert.userEmail || 'No email' %>)</td>
+            <td><%= cert.title %></td>
+            <td><%= cert.type || 'Unknown' %></td>
+            <td>
+              <% if (cert.certificateUrl) { %>
+                <a href="<%= cert.certificateUrl %>" target="_blank">View</a>
+              <% } else { %>
+                N/A
+              <% } %>
+            </td>
+            <td>
+              <% if (cert.thumbnailUrl) { %>
+                <img src="<%= cert.thumbnailUrl %>" alt="Thumbnail" />
+              <% } else { %>
+                N/A
+              <% } %>
+            </td>
+            <td>
+              <% if (cert.videoUrl) { %>
+                <video src="<%= cert.videoUrl %>" controls></video>
+              <% } else { %>
+                N/A
+              <% } %>
+            </td>
+            <td><%= new Date(cert.createdAt).toLocaleString() %></td>
+            <td class="actions">
+              <form action="/admin/certificates/delete/<%= cert.id %>" method="POST">
+                <button type="submit" class="delete">Delete</button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    function togglePremiumFields() {
+      const type = document.getElementById('uploadType').value;
+      const premiumFields = document.getElementById('premiumFields');
+      const videoInput = document.getElementById('videoInput');
+      if (type === 'premium' || type === 'free') {
+        premiumFields.style.display = type === 'premium' ? 'block' : 'none';
+        videoInput.style.display = 'block';
+        videoInput.required = true;
+      } else {
+        premiumFields.style.display = 'none';
+        videoInput.style.display = 'none';
+        videoInput.required = false;
+      }
+    }
+    togglePremiumFields(); // Initial call to set visibility
+
+    function toggleUploadFields() {
+      const type = document.getElementById('uploadTypeCertVideo').value;
+      const certificateFields = document.getElementById('certificateFields');
+      const videoFields = document.getElementById('videoFields');
+
+      // Hide all fields by default
+      certificateFields.style.display = 'none';
+      videoFields.style.display = 'none';
+
+      // Reset required attributes
+      document.querySelectorAll('input[required]').forEach(input => input.required = false);
+
+      // Show and set required fields based on type
+      if (type === 'certificate') {
+        certificateFields.style.display = 'block';
+        certificateFields.querySelector('input[name="certificate"]').required = true;
+      } else if (type === 'video') {
+        videoFields.style.display = 'block';
+        videoFields.querySelector('input[name="thumbnail"]').required = true;
+        videoFields.querySelector('input[name="video"]').required = true;
+      }
+    }
+    toggleUploadFields(); // Initial call to set visibility
+
+    // Display success/error messages from query params
+    const urlParams = new URLSearchParams(window.location.search);
+    const success = urlParams.get('success');
+    const error = urlParams.get('error');
+    if (success) {
+      const successDiv = document.createElement('div');
+      successDiv.className = 'success';
+      successDiv.textContent = success;
+      document.body.insertBefore(successDiv, document.body.firstChild);
+    }
+    if (error) {
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'error';
+      errorDiv.textContent = error;
+      document.body.insertBefore(errorDiv, document.body.firstChild);
+    }
+  </script>
+</body>
+</html>
