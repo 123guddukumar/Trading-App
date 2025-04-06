@@ -37,4 +37,4 @@ yarn-error.*
 
 
 .env
-.serviceAccountKey.json
+serviceAccountKey.json
