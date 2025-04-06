@@ -29,12 +29,14 @@ yarn-error.*
 .DS_Store
 *.pem
 
-# local env files
-.env*.local
 
 # typescript
 *.tsbuildinfo
 
 
+# Local env files
 .env
+.env*.local
+
+# Service account key
 serviceAccountKey.json
