@@ -45,7 +45,7 @@ export default function CourseDetailScreen({ route, navigation }) {
 
             // Step 1: Fetch the order_id from the server
             console.log('Fetching order from server...');
-            const response = await fetch('http://192.168.99.143:3000/create-order', {
+            const response = await fetch('https://trading-app-1-nag0.onrender.com/create-order', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -74,7 +74,7 @@ export default function CourseDetailScreen({ route, navigation }) {
                 key: razorpayKey,
                 amount: course.discountPrice * 100, // Amount in paise
                 currency: 'INR',
-                name: 'Candle King',
+                name: 'BTech Trader',
                 description: `Purchase ${course.title}`,
                 image: 'https://yourwebsite.com/logo.png',
                 order_id: orderId,
@@ -191,7 +191,7 @@ export default function CourseDetailScreen({ route, navigation }) {
 
                 // Notify the server
                 console.log('Notifying server of purchase...');
-                const notifyResponse = await fetch('http://192.168.99.143:3000/notify-purchase', {
+                const notifyResponse = await fetch('https://trading-app-1-nag0.onrender.com/notify-purchase', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({

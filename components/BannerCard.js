@@ -13,7 +13,7 @@ const BannerCard = ({ image, title, onPress }) => (
 );
 
 const styles = StyleSheet.create({
-    card: { width: 310, height: 200, marginRight: 0, borderRadius: 10, overflow: 'hidden' },
+    card: { width: 310, height: 200, marginRight: 10, borderRadius: 10, overflow: 'hidden' },
     image: { width: '100%', height: '100%' },
     title: { position: 'absolute', bottom: 10, left: 10, color: '#fff', fontWeight: 'bold' },
 });

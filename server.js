@@ -479,16 +479,16 @@ app.post('/notify-purchase', async (req, res) => {
     try {
         console.log('Sending email to user:', userEmail);
         const userMailInfo = await transporter.sendMail({
-            from: '"Candle King" <rkinstitute85@gmail.com>',
+            from: '"BTech Trader" <rkinstitute85@gmail.com>',
             to: userEmail,
             subject: 'Course Purchase Confirmation',
-            text: `Dear ${userName},\n\nYou have successfully purchased the course "${courseTitle}".\nYour unique token number is: ${token}\n\nThank you for choosing Candle King!`,
+            text: `Dear ${userName},\n\nYou have successfully purchased the course "${courseTitle}".\nYour unique token number is: ${token}\n\nThank you for choosing BTech Trader!`,
         });
         console.log('Email sent to user successfully:', userMailInfo.messageId);
 
         console.log('Sending email to admin: fakeclub256@gmail.com');
         const adminMailInfo = await transporter.sendMail({
-            from: '"Candle King" <rkinstitute85@gmail.com>',
+            from: '"BTech Trader" <rkinstitute85@gmail.com>',
             to: 'fakeclub256@gmail.com',
             subject: 'New Course Purchase Notification',
             text: `A user has purchased a course.\n\nDetails:\n- User: ${userName}\n- Email: ${userEmail}\n- Course: ${courseTitle}\n- Price: ₹${coursePrice}\n- Token: ${token}\n\nInvoice:\nCourse: ${courseTitle}\nPrice: ₹${coursePrice}\nToken: ${token}`,

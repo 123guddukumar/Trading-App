@@ -180,7 +180,7 @@ export default function HomeScreen({ navigation }) {
         try {
             setCurrentCourse(course);
             console.log('Fetching order from server...');
-            const response = await fetch('http://192.168.99.143:3000/create-order', {
+            const response = await fetch('https://trading-app-1-nag0.onrender.com/create-order', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -320,7 +320,7 @@ export default function HomeScreen({ navigation }) {
                 console.log('Purchase saved to Firebase successfully');
 
                 console.log('Notifying server of purchase...');
-                const notifyResponse = await fetch('http://192.168.99.143:3000/notify-purchase', {
+                const notifyResponse = await fetch('https://trading-app-1-nag0.onrender.com/notify-purchase', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
